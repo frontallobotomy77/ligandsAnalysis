@@ -1,0 +1,90 @@
+---
+title: "Ligands analysis"
+author: "frontallobotomy77"
+date: "`r format(Sys.time(), '%d %b %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: true
+    number_sections: true
+    theme: spacelab
+    highlight: espresso
+    df_print: paged
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Summary <!-- na koniec -->
+
+#Data analysis
+##Libraries used in report <!-- opis + kod załączający -->
+ - dplyr
+ - ggplot2
+ - DT
+ 
+```{r libraries initialization, include=FALSE}
+if (!require('dplyr')){ 
+  install.packages('dplyr')}
+library(dplyr)
+
+if (!require('ggplot2')){ 
+  install.packages('ggplot2')}
+library(ggplot2)
+
+if (!require('DT')){ 
+  install.packages('DT')}
+library(DT)
+```
+ 
+
+##Initialization <!-- zapewnienie powtarzalności wykonania -->
+
+```{r initialization, include=FALSE}
+set.seed(7)
+prettyTable <- function(table_df, round_columns=numeric(), round_digits=2) {
+    DT::datatable(table_df, style="bootstrap", filter = "top", rownames = FALSE, extensions = "Buttons", options = list(dom = 'Bfrtip',                    buttons = c('copy', 'csv', 'excel', 'pdf', 'print'))) %>%
+    formatRound(round_columns, round_digits)
+}
+```
+
+#Data loading
+
+```{r data loading, cache=TRUE}
+# Start the clock!
+ptm <- proc.time()
+
+sample <- read.table(file='data/all_summary.csv', header = TRUE, sep = ';', stringsAsFactors = FALSE, 
+                     comment.char = "", strip.white = TRUE, na.strings = 'NA')
+
+# Stop the clock
+proc.time() - ptm
+```
+
+
+#Data cleansing
+
+#Missing data processing
+
+#Basic data set specification
+
+#Significant classes extracting
+
+#Correlation between variables
+
+#Cardinality of classes
+
+#Atoms and electrons distribution diagram
+
+#Classes with the greatest inconsistency in selected attributes
+
+#Value distribution chart of selected attributes
+
+#Interactive diagram
+
+#Regression
+
+#Classification
