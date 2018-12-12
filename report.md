@@ -1,25 +1,25 @@
 ---
 title: "Ligands analysis"
 author: "frontallobotomy77"
-date: "09 gru 2018"
+date: "12 gru 2018"
 output: 
   html_document:
-    toc: true
-    toc_float:
-      collapsed: true
-    number_sections: true
-    theme: spacelab
+    fig_caption: yes
     highlight: espresso
-    df_print: paged
-    keep_md: true
+    keep_md: yes
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+    toc_float:
+      collapsed: yes
 ---
 
 
 
-#Summary <!-- na koniec -->
+# Summary 
 
-#Data analysis
-##Libraries used in report <!-- opis + kod załączający -->
+# Data analysis
+## Libraries used in report 
  - dplyr
  - ggplot2
  - DT
@@ -27,50 +27,65 @@ output:
 
  
 
-##Initialization <!-- zapewnienie powtarzalności wykonania -->
+## Initialization 
 
 
 
-#Data loading
+# Data loading
 
-
-```r
-# Start the clock!
-ptm <- proc.time()
-
-sample <- read.table(file='data/all_summary.csv', header = TRUE, nrows = 100000, sep = ';', stringsAsFactors = FALSE, 
-                     comment.char = "", strip.white = TRUE, na.strings = 'NA')
-
-# Stop the clock
-proc.time() - ptm
-```
 
 ```
 ##    user  system elapsed 
-##  112.17    4.48  157.99
+##   7.274   0.152   7.455
 ```
 
+# Data cleansing
 
-#Data cleansing
+```r
+unwanted <- c('UNK', 'UNX', 'UNL', 'DUM', 'N', 'BLOB', 'ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'MSE', 'PHE', 'PRO', 'SEC', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'DA', 'DG', 'DT', 'DC', 'DU', 'A', 'G', 'T', 'C', 'U', 'HOH', 'H20', 'WAT')
+tryout_clean <- tryout %>% filter(!res_name %in% unwanted)  
+print(paste0('tryout size: ', nrow(tryout)))
+```
 
-#Missing data processing
+```
+## [1] "tryout size: 50000"
+```
 
-#Basic data set specification
+```r
+print(paste0('clean size: ', nrow(tryout_clean)))
+```
 
-#Significant classes extracting
+```
+## [1] "clean size: 49586"
+```
 
-#Correlation between variables
+```r
+print(paste0('delta: ', nrow(tryout)-nrow(tryout_clean)))
+```
 
-#Cardinality of classes
+```
+## [1] "delta: 414"
+```
 
-#Atoms and electrons distribution diagram
+# Missing data processing
+ter
 
-#Classes with the greatest inconsistency in selected attributes
+# Basic data set specification
 
-#Value distribution chart of selected attributes
+# Significant classes extracting
 
-#Interactive diagram
+# Correlation between variables
 
-#Regression
+# Cardinality of classes
 
-#Classification
+# Atoms and electrons distribution diagram
+
+# Classes with the greatest inconsistency in selected attributes
+
+# Value distribution chart of selected attributes
+
+# Interactive diagram
+
+# Regression
+
+# Classification

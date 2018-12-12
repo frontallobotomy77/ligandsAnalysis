@@ -4,24 +4,25 @@ author: "frontallobotomy77"
 date: "`r format(Sys.time(), '%d %b %Y')`"
 output: 
   html_document:
-    toc: true
-    toc_float:
-      collapsed: true
-    number_sections: true
-    theme: spacelab
+    fig_caption: yes
     highlight: espresso
-    df_print: paged
-    keep_md: true
+    keep_md: yes
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+    toc_float:
+      collapsed: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+chooseCRANmirror(graphics=TRUE, ind=1)
 ```
 
-#Summary <!-- na koniec -->
+# Summary 
 
-#Data analysis
-##Libraries used in report <!-- opis + kod załączający -->
+# Data analysis
+## Libraries used in report 
  - dplyr
  - ggplot2
  - DT
@@ -41,50 +42,63 @@ library(DT)
 ```
  
 
-##Initialization <!-- zapewnienie powtarzalności wykonania -->
+## Initialization 
 
 ```{r initialization, include=FALSE}
 set.seed(7)
 prettyTable <- function(table_df, round_columns=numeric(), round_digits=2) {
-    DT::datatable(table_df, style="bootstrap", filter = "top", rownames = FALSE, extensions = "Buttons", options = list(dom = 'Bfrtip',                    buttons = c('copy', 'csv', 'excel', 'pdf', 'print'))) %>%
+    DT::datatable(table_df, style="bootstrap", filter = "top", rownames = FALSE, extensions = "Buttons", options = list(dom = 'Bfrtip', 
+                  buttons = c('copy', 'csv', 'excel', 'pdf', 'print'))) %>%
     formatRound(round_columns, round_digits)
 }
 ```
 
-#Data loading
+# Data loading
 
-```{r data loading, cache=TRUE}
-# Start the clock!
+```{r data loading, cache=TRUE, echo=FALSE}
+#Start the clock!
 ptm <- proc.time()
 
-sample <- read.table(file='data/all_summary.csv', header = TRUE, sep = ';', stringsAsFactors = FALSE, 
-                     comment.char = "", strip.white = TRUE, na.strings = 'NA')
+sample <- read.table(file='data/all_summary.csv', header = TRUE, nrows = 1000, sep = ';', stringsAsFactors = FALSE, quote = "'", dec = '.')
+classes <- sapply(sample, class)
+classes <- ifelse(classes == 'integer', 'numeric', classes)
+classes['res_name'] <- 'factor'
+classes['res_id'] <- 'character'
+tryout <- read.table(file='data/all_summary.csv', header = TRUE, nrows = 50000, sep = ';', colClasses = classes, comment.char = "", 
+                     stringsAsFactors = FALSE, strip.white = TRUE, na.strings = 'NA', quote = "'", dec = '.')
 
 # Stop the clock
 proc.time() - ptm
 ```
 
+# Data cleansing
+```{r data cleansing}
+unwanted <- c('UNK', 'UNX', 'UNL', 'DUM', 'N', 'BLOB', 'ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'MSE', 'PHE', 'PRO', 'SEC', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'DA', 'DG', 'DT', 'DC', 'DU', 'A', 'G', 'T', 'C', 'U', 'HOH', 'H20', 'WAT')
+tryout_clean <- tryout %>% filter(!res_name %in% unwanted)  
+print(paste0('tryout size: ', nrow(tryout)))
+print(paste0('clean size: ', nrow(tryout_clean)))
+print(paste0('delta: ', nrow(tryout)-nrow(tryout_clean)))
+```
 
-#Data cleansing
+# Missing data processing
+ter
 
-#Missing data processing
+# Basic data set specification
 
-#Basic data set specification
+# Significant classes extracting
 
-#Significant classes extracting
+# Correlation between variables
 
-#Correlation between variables
+# Cardinality of classes
 
-#Cardinality of classes
+# Atoms and electrons distribution diagram
 
-#Atoms and electrons distribution diagram
+# Classes with the greatest inconsistency in selected attributes
 
-#Classes with the greatest inconsistency in selected attributes
+# Value distribution chart of selected attributes
 
-#Value distribution chart of selected attributes
+# Interactive diagram
 
-#Interactive diagram
+# Regression
 
-#Regression
-
-#Classification
+# Classification
