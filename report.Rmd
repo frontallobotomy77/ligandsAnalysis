@@ -105,8 +105,8 @@ prettyTable <- function(table_df, round_columns=numeric(), round_digits=2) {
 
 Funkcja 'fread' zapewnia szybsze wczytywanie pliku niż 'read_table', dlatego to na nią padł wybór.
 
-```{r data loading, cache=TRUE}
-data_set <- fread('all_summary.csv', nrows=5000, header = TRUE, dec = '.', stringsAsFactors = FALSE)
+```{r data loading, cache=TRUE, cache.lazy=FALSE}
+data_set <- fread('all_summary.csv', header = TRUE, nrows = 200000, dec = '.', stringsAsFactors = FALSE)
 ```
 
 # Czyszczenie danych
