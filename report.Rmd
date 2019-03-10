@@ -5,27 +5,35 @@ date: "`r format(Sys.time(), '%d %b %Y')`"
 output: 
   html_document:
     fig_caption: yes
-    highlight: espresso
+    highlight: tango
     keep_md: yes
     number_sections: yes
-    theme: spacelab
+    theme: readable
     toc: yes
     toc_float:
       collapsed: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
 chooseCRANmirror(graphics=TRUE, ind=1)
 ```
 
-# Summary 
+# Wykorzystanie biblioteki
 
-# Data analysis
-## Libraries used in report 
+Użyto następujących bibliotek:
  - dplyr
  - ggplot2
  - DT
+ - data.table
+ - kableExtra
+ - Hmisc
+ - corrplot
+ - PerformanceAnalytics
+ - caret
+ - purrr
+ - tidyr
+ - plotly
  
 ```{r libraries initialization, include=FALSE}
 if (!require('dplyr')){ 
@@ -39,12 +47,50 @@ library(ggplot2)
 if (!require('DT')){ 
   install.packages('DT')}
 library(DT)
+
+if (!require('data.table')){ 
+  install.packages('data.table')}
+library(data.table)
+
+if (!require('kableExtra')){ 
+  install.packages('kableExtra')}
+library(kableExtra)
+
+if (!require('Hmisc')){ 
+  install.packages('Hmisc')}
+library(Hmisc)
+
+if (!require('corrplot')){ 
+  install.packages('corrplot')}
+library(corrplot)
+
+if (!require('PerformanceAnalytics')){ 
+  install.packages('PerformanceAnalytics')}
+library(PerformanceAnalytics)
+
+if (!require('caret')){ 
+  install.packages('caret')}
+library(caret)
+
+if (!require('purrr')){ 
+  install.packages('purrr')}
+library(purrr)
+
+if (!require('tidyr')){ 
+  install.packages('tidyr')}
+library(tidyr)
+
+if (!require('plotly')){ 
+  install.packages('plotly')}
+library(plotly)
 ```
  
 
-## Initialization 
+## Inicjalizacja
 
-```{r initialization, include=FALSE}
+Następujący kod zapewnia powtarzalność eksperymentu.
+
+```{r initialization}
 set.seed(7)
 prettyTable <- function(table_df, round_columns=numeric(), round_digits=2) {
     DT::datatable(table_df, style="bootstrap", filter = "top", rownames = FALSE, extensions = "Buttons", options = list(dom = 'Bfrtip', 
@@ -53,19 +99,20 @@ prettyTable <- function(table_df, round_columns=numeric(), round_digits=2) {
 }
 ```
 
-# Data loading
+# Wczytywanie danych
 
-```{r data loading, cache=TRUE, echo=FALSE}
+```{r data loading, cache=TRUE, echo=FALSE, include=FALSE}
 #Start the clock!
 ptm <- proc.time()
 
-sample <- read.table(file='data/all_summary.csv', header = TRUE, nrows = 1000, sep = ';', stringsAsFactors = FALSE, quote = "'", dec = '.')
-classes <- sapply(sample, class)
-classes <- ifelse(classes == 'integer', 'numeric', classes)
-classes['res_name'] <- 'factor'
-classes['res_id'] <- 'character'
-tryout <- read.table(file='data/all_summary.csv', header = TRUE, nrows = 50000, sep = ';', colClasses = classes, comment.char = "", 
-                     stringsAsFactors = FALSE, strip.white = TRUE, na.strings = 'NA', quote = "'", dec = '.')
+#sample <- read.table(file='data/all_summary.csv', header = TRUE, nrows = 1000, sep = ';', stringsAsFactors = FALSE, quote = "'", dec = '.')
+#classes <- sapply(sample, class)
+#classes <- ifelse(classes == 'integer', 'numeric', classes)
+#classes['res_name'] <- 'factor'
+#classes['res_id'] <- 'character'
+#tryout <- read.table(file='data/all_summary.csv', header = TRUE, nrows = 50000, sep = ';', colClasses = classes, comment.char = "", 
+#                     stringsAsFactors = FALSE, strip.white = TRUE, na.strings = 'na', quote = "'", dec = '.')
+data_set <- fread('all_summary.csv', nrows=5000, header = TRUE, dec = '.', stringsAsFactors = FALSE)
 
 # Stop the clock
 proc.time() - ptm
@@ -74,30 +121,129 @@ proc.time() - ptm
 # Data cleansing
 ```{r data cleansing}
 unwanted <- c('UNK', 'UNX', 'UNL', 'DUM', 'N', 'BLOB', 'ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'MSE', 'PHE', 'PRO', 'SEC', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'DA', 'DG', 'DT', 'DC', 'DU', 'A', 'G', 'T', 'C', 'U', 'HOH', 'H20', 'WAT')
-tryout_clean <- tryout %>% filter(!res_name %in% unwanted)  
-print(paste0('tryout size: ', nrow(tryout)))
-print(paste0('clean size: ', nrow(tryout_clean)))
-print(paste0('delta: ', nrow(tryout)-nrow(tryout_clean)))
+data_set_clean <- data_set %>% filter(!res_name %in% unwanted) %>% filter(!is.na(res_name))
+print(paste0('tryout size: ', nrow(data_set)))
+print(paste0('clean size: ', nrow(data_set_clean)))
+print(paste0('delta: ', nrow(data_set)-nrow(data_set_clean)))
 ```
 
 # Missing data processing
-ter
+Kolumna "weight_col" wydaje się zawierać wartości puste dla większości wierszy, dlatego też wykluczono ją ze zbioru danych. Poza tym, pominięto wiersze z brakującymi wartościami, gdyż jest ich niewiele w stosunku do rozmiaru całego zbioru.
+```{r missing data}
+#print(sapply(data_set_clean, function(x) sum(is.na(x))))
+data_set_clean <- data_set_clean %>% select(-weight_col)
+#print(nrow(data_set_clean) - nrow(na.omit(data_set_clean)))
+data_set_clean <- na.omit(data_set_clean)
+print(paste0('clean size: ', nrow(data_set_clean)))
+```
 
 # Basic data set specification
+```{r data specification}
+print(paste0('Number of rows: ', nrow(data_set_clean)))
+print(paste0('Number of columns: ', ncol(data_set_clean)))
+kable(summary(data_set_clean)) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "bordered", "responsive", 'basic')) %>%
+  scroll_box(width = "100%")
+```
 
 # Significant classes extracting
+```{r significant classes}
+frequent_res_name <- data_set_clean %>% select(res_name) %>% group_by(res_name) %>% summarise(count = n()) %>% arrange(desc(count)) %>% head(50)
+data_set_clean_significant <- data_set_clean %>% filter(res_name %in% frequent_res_name$res_name)
+nrow(data_set_clean_significant)
+```
 
 # Correlation between variables
+Kolumny, dla których liczona jest korelacja muszą zawierać wartości numeryczne. Dlatego też tylko takie, które je zawierają zostały wzięte pod uwagę w tej sekcji. Zachodzi również potrzeba wyłączenia z analizy korelacji kolumn o odchyleniu standardowym bliskim zeru ze względu na wymagania dotyczące metody tworzącej wykres.
+```{r correlation, cache = TRUE}
+#correlation <- cor(data_set_clean_significant, method = 'kendall', use = 'complete.obs')
+#correlation <- as.data.frame(as.table(cor(data_set_clean_significant %>% select_if(is.numeric), method = "kendall", use="complete.obs")))
+data_to_cor <- data_set_clean_significant %>% select_if(is.numeric)
+#correlation <- rcorr(as.matrix(data_to_cor))
+flattenCorrMatrix <- function(cormat, pmat) {
+  ut <- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor  =(cormat)[ut],
+    p = pmat[ut]
+    )
+}
+#flattenCorrMatrix(correlation$r, correlation$P)
+near_zero_var_cols <- nearZeroVar(data_to_cor, names = TRUE)
+data_to_cor <- data_to_cor %>% select(-near_zero_var_cols)
+correlation <- cor(data_to_cor)
+#symnum(correlation)
+#corrplot(correlation, type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
+corrplot(correlation, tl.pos="n", type="upper", diag=TRUE, method="color", order="hclust")
+#chart.Correlation(data_to_cor, histogram=TRUE, pch=19)
+```
 
 # Cardinality of classes
+```{r cardinality}
+prettyTable(frequent_res_name)
+```
 
-# Atoms and electrons distribution diagram
+# Atoms and electrons distribution diagrams
+```{r distribution diagrams}
+ggplotly(ggplot(data=data_set_clean_significant, aes(data_set_clean_significant$local_res_atom_non_h_electron_sum)) 
+         + geom_histogram(binwidth = 1, colour = "black", fill="white") 
+         + scale_x_continuous("Liczba elektronów"))
+
+ggplotly(ggplot(data=data_set_clean_significant, aes(data_set_clean_significant$local_res_atom_non_h_count)) 
+         + geom_histogram(binwidth = 1, colour = "black", fill="white") 
+         + scale_x_continuous("Liczba atomów"))
+```
 
 # Classes with the greatest inconsistency in selected attributes
+```{r inconsistency}
+data_set_clean_significant %>%
+  select(res_name, local_res_atom_non_h_count, dict_atom_non_h_count) %>%
+  distinct(res_name, .keep_all = TRUE) %>%
+  mutate(diff = abs(local_res_atom_non_h_count - dict_atom_non_h_count)) %>%
+  arrange(desc(diff)) %>%
+  head(10) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+data_set_clean_significant %>%
+  select(res_name, local_res_atom_non_h_electron_sum, dict_atom_non_h_electron_sum) %>%
+  distinct(res_name, .keep_all = TRUE) %>%
+  mutate(diff = abs(local_res_atom_non_h_electron_sum - dict_atom_non_h_electron_sum)) %>%
+  arrange(desc(diff)) %>%
+  head(10) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
 
 # Value distribution chart of selected attributes
+```{r distribution of selected attributes, fig.height=60, fig.width=12}
+attributes_part_01 <- colnames(data_set_clean_significant)[grepl("part_01_",colnames(data_set_clean_significant))]
+
+
+dd <- data_set_clean_significant %>% select(attributes_part_01) %>% keep(is.numeric) %>% gather() #%>% 
+  
+  ggplotly(
+  ggplot(data = dd, aes(value)) +
+    facet_wrap(~ key, scales = "free", ncol = 3) +
+    geom_density() +
+    scale_y_continuous()) #+
+    #geom_vline(aes(xintercept=mean(value, na.rm = TRUE))))
+
+```
 
 # Interactive diagram
+```{r interactive}
+p <- plot_ly(frequent_res_name, x = ~frequent_res_name$res_name, y = ~frequent_res_name$count, type = 'bar', text = frequent_res_name$res_name,
+        marker = list(color = 'rgb(158,202,225)',
+                      line = list(color = 'rgb(8,48,107)',
+                                  width = 1.5))) %>%
+  layout(title = "Cardinality of classes",
+         xaxis = list(title = "Class"),
+         yaxis = list(title = "Cardinality"))
+p
+```
+
 
 # Regression
 
